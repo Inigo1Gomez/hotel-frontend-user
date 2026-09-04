@@ -1,0 +1,238 @@
+/* Barra de búsqueda: destino, fechas y huéspedes. */
+
+.search-bar {
+  display: grid;
+  gap: 8px;
+  align-items: end;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 12px;
+  position: relative;
+}
+
+.search-bar.is-hero {
+  grid-template-columns:
+    minmax(0, 1.5fr) minmax(168px, 0.9fr) minmax(168px, 0.9fr)
+    minmax(180px, 1.1fr) auto;
+  box-shadow: var(--shadow-lg);
+  padding: 14px;
+}
+
+.search-bar.is-compact {
+  grid-template-columns:
+    minmax(0, 1.4fr) minmax(168px, 0.9fr) minmax(168px, 0.9fr)
+    minmax(180px, 1fr) auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  position: relative;
+}
+
+.search-field-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding-left: 2px;
+}
+
+.search-field-control,
+.search-field-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  cursor: pointer;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.search-field-control:focus-within,
+.search-field-trigger:hover,
+.search-field-control:hover {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-ring);
+}
+
+.search-field-control input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.search-field-control input::placeholder {
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+/* El campo ya muestra su propio icono: se oculta el nativo de Chrome y se deja
+   que el clic en cualquier parte abra el selector de fecha. */
+.search-field.is-date .search-field-control {
+  position: relative;
+}
+
+.search-field.is-date input[type='date']::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.search-field.is-date input[type='date'] {
+  cursor: pointer;
+}
+
+.search-field-trigger {
+  text-align: left;
+}
+
+.search-field-value {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-submit {
+  min-height: 46px;
+  padding-inline: 26px;
+  font-weight: 700;
+}
+
+.search-nights {
+  grid-column: 1 / -1;
+  justify-self: end;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-faint);
+  padding-right: 2px;
+}
+
+/* ---------- popover de huéspedes ---------- */
+
+.guests-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  width: min(320px, calc(100vw - 40px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stepper-copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.stepper-label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.stepper-hint {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.stepper-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepper-controls button {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--brand);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--brand);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+
+.stepper-controls button:hover:not(:disabled) {
+  background: var(--brand-soft);
+}
+
+.stepper-controls button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-color: var(--border-strong);
+  color: var(--text-faint);
+}
+
+.stepper-value {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+@media (max-width: 1080px) {
+  .search-bar.is-hero,
+  .search-bar.is-compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .search-bar .is-destination {
+    grid-column: 1 / -1;
+  }
+  .search-submit {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  .search-bar.is-hero,
+  .search-bar.is-compact {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guests-popover {
+    right: auto;
+    left: 0;
+  }
+}

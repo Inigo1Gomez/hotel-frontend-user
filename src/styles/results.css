@@ -1,0 +1,946 @@
+/* Página de resultados: barra fija, filtros, tarjetas, mapa y paginación. */
+
+.search-page {
+  padding-bottom: 64px;
+}
+
+.search-page-bar {
+  position: sticky;
+  top: var(--navbar-h);
+  z-index: 80;
+  padding-block: 14px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.search-page-body {
+  padding-top: 22px;
+}
+
+/* ---------- barra de herramientas ---------- */
+
+.results-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.results-title {
+  font-size: clamp(19px, 2.2vw, 25px);
+}
+
+.results-dates {
+  margin-top: 3px;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.results-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.results-actions .btn.is-active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.results-filter-btn {
+  display: none;
+}
+
+.results-filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding-inline: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.sort-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sort-select select {
+  appearance: none;
+  padding: 10px 34px 10px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.sort-select select:hover {
+  border-color: var(--brand);
+}
+
+.sort-select svg {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+  color: var(--text-dim);
+}
+
+/* ---------- disposición ---------- */
+
+.search-layout {
+  display: grid;
+  grid-template-columns: 268px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.search-layout.has-map {
+  grid-template-columns: 252px minmax(0, 1fr) minmax(300px, 372px);
+}
+
+.search-filters {
+  position: sticky;
+  top: calc(var(--navbar-h) + 96px);
+  max-height: calc(100vh - var(--navbar-h) - 120px);
+  overflow-y: auto;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-filters-head,
+.search-filters-foot,
+.search-filters-backdrop {
+  display: none;
+}
+
+.search-map {
+  position: sticky;
+  top: calc(var(--navbar-h) + 96px);
+}
+
+/* ---------- filtros ---------- */
+
+.filters-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.filters-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 15px;
+}
+
+.filters-clear {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--brand);
+  cursor: pointer;
+}
+
+.filters-clear:hover {
+  text-decoration: underline;
+}
+
+.filters-count {
+  padding-block: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.filters-count strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.filter-group {
+  padding-block: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.filter-group-title {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 10px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.filter-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-faint);
+}
+
+.filter-search:focus-within {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-ring);
+}
+
+.filter-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.price-range {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.price-range-value {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.price-range input[type='range'] {
+  width: 100%;
+  accent-color: var(--brand);
+  cursor: pointer;
+}
+
+.rating-options,
+.star-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pill-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+
+.pill-option:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.pill-option.is-active {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  font-size: 13.5px;
+}
+
+.check input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.check-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  color: transparent;
+  transition: all var(--t-fast);
+}
+
+.check:hover .check-box {
+  border-color: var(--brand);
+}
+
+.check input:checked + .check-box {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+
+.check input:focus-visible + .check-box {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.check-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.check-label svg {
+  color: var(--text-faint);
+}
+
+.check input:checked ~ .check-label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ---------- lista de resultados ---------- */
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  container-type: inline-size;
+  container-name: results;
+}
+
+.hotel-card {
+  display: grid;
+  grid-template-columns: 258px minmax(0, 1fr) 208px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--t-base), border-color var(--t-base);
+}
+
+.hotel-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+.hotel-card-media {
+  position: relative;
+  overflow: hidden;
+  min-height: 178px;
+  background: var(--surface-3);
+}
+
+.hotel-card-media svg,
+.hotel-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hotel-card-tags {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.hotel-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+}
+
+.hotel-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.hotel-card-titleline {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.hotel-card-name {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.hotel-card-name a {
+  text-decoration: none;
+}
+
+.hotel-card-name a:hover {
+  color: var(--brand);
+  text-decoration: underline;
+}
+
+.hotel-card-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.hotel-card-location svg {
+  color: var(--text-faint);
+}
+
+.hotel-card-desc {
+  font-size: 13.5px;
+  color: var(--text-dim);
+  flex: 1;
+}
+
+.hotel-card-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.hotel-card-aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  padding: 16px 18px;
+  border-left: 1px solid var(--border);
+  text-align: right;
+}
+
+.hotel-card-deals {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--text-faint);
+}
+
+.hotel-card-strike {
+  font-size: 12.5px;
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.hotel-card-price {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.hotel-card-price span {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--text-faint);
+  letter-spacing: 0;
+}
+
+.hotel-card-total {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.hotel-card-cta {
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.hotel-card-perk {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--success);
+}
+
+/* ---------- puntaje ---------- */
+
+.rating-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.rating-badge-score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--score-bg);
+  color: var(--score-text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  letter-spacing: -0.02em;
+}
+
+.rating-badge.is-sm .rating-badge-score {
+  width: 38px;
+  height: 30px;
+  font-size: 14px;
+}
+
+.rating-badge.is-lg .rating-badge-score {
+  width: 50px;
+  height: 40px;
+  font-size: 19px;
+}
+
+.rating-badge-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.rating-badge-label {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.rating-badge-count {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  font-weight: 400;
+}
+
+.star-rating {
+  display: inline-flex;
+  gap: 1px;
+  color: var(--gold);
+}
+
+/* ---------- estados ---------- */
+
+.empty-state,
+.error-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 28px;
+}
+
+.empty-state p,
+.error-card p {
+  max-width: 420px;
+}
+
+.empty-state .btn {
+  margin-top: 10px;
+}
+
+.hotel-card.is-skeleton {
+  pointer-events: none;
+}
+
+.skeleton-block,
+.skeleton-line {
+  background: linear-gradient(90deg, #10123a0a 25%, #10123a17 37%, #10123a0a 63%);
+  background-size: 400% 100%;
+  animation: skeleton 1.4s ease infinite;
+  border-radius: var(--radius-xs);
+}
+
+.skeleton-line {
+  height: 12px;
+  margin-block: 8px;
+}
+
+.skeleton-line.is-lg {
+  height: 20px;
+  width: 62%;
+}
+.skeleton-line.is-md {
+  width: 78%;
+}
+.skeleton-line.is-sm {
+  height: 10px;
+  width: 40%;
+}
+.skeleton-line.is-pill {
+  height: 36px;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* ---------- paginación ---------- */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 28px;
+}
+
+.pagination-page,
+.pagination-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all var(--t-fast);
+}
+
+.pagination-page:hover:not(:disabled),
+.pagination-arrow:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.pagination-page.is-active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  font-weight: 600;
+}
+
+.pagination-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---------- mapa esquemático ---------- */
+
+.map-panel {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.map-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.map-label {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  fill: #7c819c;
+  letter-spacing: 0.02em;
+}
+
+.map-pin {
+  cursor: pointer;
+}
+
+.map-pin-bubble {
+  fill: var(--surface);
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  filter: drop-shadow(0 1px 2px #10123a26);
+  transition: fill var(--t-fast), stroke var(--t-fast);
+}
+
+/* La punta va detrás de la burbuja y sin trazo, para que no se vea la costura. */
+.map-pin-tip {
+  fill: var(--surface);
+  stroke: none;
+  filter: drop-shadow(0 1px 1px #10123a26);
+  transition: fill var(--t-fast);
+}
+
+.map-pin-price {
+  font-family: var(--font-display);
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: var(--text);
+  text-anchor: middle;
+}
+
+.map-pin:hover .map-pin-bubble,
+.map-pin.is-active .map-pin-bubble {
+  fill: var(--brand);
+  stroke: var(--brand);
+}
+
+.map-pin:hover .map-pin-tip,
+.map-pin.is-active .map-pin-tip {
+  fill: var(--brand);
+}
+
+.map-pin:hover .map-pin-price,
+.map-pin.is-active .map-pin-price {
+  fill: #fff;
+}
+
+.map-card {
+  position: absolute;
+  left: 12px;
+  bottom: 40px;
+  right: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+}
+
+.map-card-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.map-card-meta {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin-bottom: 5px;
+}
+
+.map-disclaimer {
+  padding: 9px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+/* ---------- adaptación ---------- */
+
+@media (max-width: 1280px) {
+  .search-layout.has-map {
+    grid-template-columns: 240px minmax(0, 1fr);
+  }
+  .search-map {
+    grid-column: 1 / -1;
+    position: static;
+  }
+}
+
+@media (max-width: 1023px) {
+  .search-layout,
+  .search-layout.has-map {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .results-filter-btn {
+    display: inline-flex;
+  }
+
+  .search-filters {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 130;
+    width: min(360px, 88vw);
+    max-height: none;
+    border-radius: 0;
+    border-width: 0 1px 0 0;
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform var(--t-base);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .search-filters.is-open {
+    transform: translateX(0);
+  }
+
+  .search-filters .filters {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 18px;
+  }
+
+  .search-filters-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  .search-filters-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: pointer;
+  }
+
+  .search-filters-foot {
+    display: block;
+    padding: 14px 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  .search-filters-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    border: 0;
+    background: #10123a66;
+    cursor: pointer;
+  }
+
+  /* El cajón ya rotula "Filtros" en su cabecera: se evita el título repetido. */
+  .search-filters .filters-title {
+    display: none;
+  }
+
+  .search-filters .filters-head {
+    justify-content: flex-end;
+    min-height: 0;
+    padding-block: 10px 8px;
+    border-bottom: 0;
+  }
+
+  .search-filters .filters-head:not(:has(.filters-clear)) {
+    display: none;
+  }
+
+  .search-filters .filters-count {
+    padding-top: 0;
+  }
+}
+
+/* Columna intermedia: se recortan las bandas lateral y de imagen. */
+@container results (max-width: 900px) {
+  .hotel-card {
+    grid-template-columns: 196px minmax(0, 1fr) 172px;
+  }
+
+  .hotel-card-body {
+    padding: 14px;
+  }
+
+  .hotel-card-head {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .hotel-card-aside {
+    padding: 14px;
+  }
+
+  .hotel-card-price {
+    font-size: 20px;
+  }
+}
+
+/* Columna angosta: la tarjeta se apila. */
+@container results (max-width: 660px) {
+  .hotel-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hotel-card-media {
+    border-bottom: 1px solid var(--border);
+    aspect-ratio: 16 / 9;
+    min-height: 0;
+  }
+
+  .hotel-card-head {
+    flex-direction: row;
+  }
+
+  .hotel-card-aside {
+    align-items: stretch;
+    text-align: left;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .hotel-card-cta {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 760px) {
+  .search-page-bar {
+    position: static;
+  }
+}

@@ -1,0 +1,85 @@
+/*
+ * Design tokens — estética de buscador de hoteles.
+ *
+ * Azul de marca sobre navy profundo, superficies blancas, bordes finos y
+ * sombras suaves. Reemplaza al sistema neo-brutalista de la versión anterior.
+ */
+:root {
+  /* superficies */
+  --bg: #f1f2f8;
+  --bg-soft: #e9ebf3;
+  --surface: #ffffff;
+  --surface-2: #f7f8fc;
+  --surface-3: #eef0f7;
+
+  /* navy de cabecera y pie */
+  --navy: #05203c;
+  --navy-soft: #0d2f52;
+  --navy-line: #1d3f63;
+
+  /* trazo */
+  --border: #e3e5ee;
+  --border-strong: #c9cddb;
+  --stroke: #dcdfea;
+  --stroke-w: 1px;
+
+  /* texto */
+  --text: #111236;
+  --text-dim: #545876;
+  --text-faint: #7c819c;
+  --text-on-dark: #ffffff;
+  --text-on-dark-dim: #b9c4d4;
+
+  /* acentos */
+  --brand: #0062e3;
+  --brand-dark: #0050bb;
+  --brand-soft: #e6f0fe;
+  --brand-ring: #0062e326;
+
+  --accent: var(--brand);
+  --accent-soft: var(--brand-soft);
+
+  --teal: #00a698;
+  --teal-soft: #e0f5f3;
+
+  --deal: #d1435b;
+  --deal-soft: #fdeaee;
+
+  --gold: #f5a623;
+  --gold-soft: #fdf2e0;
+
+  --success: #128a5f;
+  --success-soft: #e4f4ed;
+
+  /* puntaje de huéspedes */
+  --score-bg: var(--navy);
+  --score-text: #ffffff;
+
+  /* radios */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* sombras */
+  --shadow-xs: 0 1px 2px #10123a0f;
+  --shadow-sm: 0 1px 3px #10123a14, 0 1px 2px #10123a0a;
+  --shadow-md: 0 4px 12px #10123a14, 0 1px 3px #10123a0f;
+  --shadow-lg: 0 12px 32px #10123a1f, 0 2px 8px #10123a14;
+  --shadow-brand: 0 6px 16px #0062e333;
+
+  /* tipografía */
+  --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* medidas */
+  --container: 1180px;
+  --container-wide: 1400px;
+  --navbar-h: 64px;
+
+  /* transiciones */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 0.14s var(--ease);
+  --t-base: 0.2s var(--ease);
+}
