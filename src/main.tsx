@@ -16,7 +16,8 @@ if (!container) throw new Error('No se encontró el nodo #root en index.html')
 
 createRoot(container).render(
   <StrictMode>
-    <BrowserRouter>
+    {/* BASE_URL es "/" en desarrollo y "/hotel-frontend-user/" en GitHub Pages (--base del build). */}
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <App />
     </BrowserRouter>
   </StrictMode>,

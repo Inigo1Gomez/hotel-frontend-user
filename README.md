@@ -64,6 +64,16 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule . /index.html [L]
 ```
 
+## GitHub Pages
+
+Cada push a `main` ejecuta [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)
+y publica en **https://inigo1gomez.github.io/hotel-frontend-user/**. El build se hace con
+`--base "/hotel-frontend-user/"` (el router toma ese prefijo de `import.meta.env.BASE_URL`) y se copia
+`index.html` a `404.html` para que el F5 en rutas internas funcione.
+
+En el repo, **Settings → Pages → Source** debe estar en `GitHub Actions`. Para apuntar a un backend,
+define la variable `VITE_API_URL` en **Settings → Secrets and variables → Actions → Variables**.
+
 ## Modo demo y conexión al backend
 
 Sin configuración, la app arranca en **modo demo**: los datos salen de
