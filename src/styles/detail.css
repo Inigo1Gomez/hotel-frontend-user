@@ -696,6 +696,26 @@
   box-shadow: 0 0 0 3px var(--brand-ring);
 }
 
+.booking-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.booking-form .btn[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.booking-error {
+  padding: 10px 13px;
+  border: 1px solid var(--deal);
+  border-radius: var(--radius-sm);
+  background: var(--deal-soft);
+  font-size: 13px;
+  color: var(--deal);
+}
+
 .booking-fineprint {
   font-size: 11.5px;
   color: var(--text-faint);

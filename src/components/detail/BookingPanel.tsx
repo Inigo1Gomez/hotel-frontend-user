@@ -3,7 +3,9 @@ import type { FormEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Guests, Hotel, RoomOption } from '@/types/hotel'
 import { Icon } from '@/components/ui/Icon'
-import { IS_DEMO_MODE } from '@/api/client'
+import { ApiError } from '@/api/client'
+import { IS_BOOKING_DEMO, createBooking } from '@/api/bookings'
+import type { ReservaPayload } from '@/api/bookings'
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
 import { formatLongDate, formatPrice, guestsLabel, pluralize } from '@/lib/format'
 
@@ -17,11 +19,20 @@ interface BookingPanelProps {
   onClose: () => void
 }
 
+function bookingErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    return error.status === 400
+      ? 'El servicio de reservas rechazó los datos. Revisa el formulario e intenta de nuevo.'
+      : `El servicio de reservas no está disponible (HTTP ${error.status}). Intenta de nuevo en unos minutos.`
+  }
+  return 'No pudimos conectar con el servicio de reservas. Revisa tu conexión e intenta de nuevo.'
+}
+
 /**
- * Resumen y datos de contacto previos a la reserva.
+ * Resumen, datos del huesped y envio de la reserva a hotel-ms-reservas.
  *
- * El envio real corresponde al microservicio de reservas; aqui se valida el
- * formulario y se muestra la confirmacion que devolveria ese servicio.
+ * Al aceptarla, el microservicio publica `reserva.creada` en RabbitMQ y
+ * hotel-ms-notificaciones envia el comprobante en PDF al correo del huesped.
  */
 export function BookingPanel({
   hotel,
@@ -32,9 +43,13 @@ export function BookingPanel({
   nights,
   onClose,
 }: BookingPanelProps) {
-  const [name, setName] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
-  const [sent, setSent] = useState(false)
+  const [phone, setPhone] = useState('')
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [booking, setBooking] = useState<ReservaPayload | null>(null)
 
   useLockBodyScroll(true)
 
@@ -50,9 +65,26 @@ export function BookingPanel({
   const serviceFee = Math.round(subtotal * 0.04)
   const total = subtotal + serviceFee
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
-    setSent(true)
+    setSending(true)
+    setError(null)
+    try {
+      const created = await createBooking({
+        hotel,
+        room,
+        checkIn,
+        checkOut,
+        guests,
+        total,
+        guest: { firstName, lastName, email, phone },
+      })
+      setBooking(created)
+    } catch (err) {
+      setError(bookingErrorMessage(err))
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -80,23 +112,30 @@ export function BookingPanel({
             <Icon name="close" size={18} />
           </button>
 
-          {sent ? (
+          {booking ? (
             <div className="booking-done">
               <span className="card-icon is-green">
                 <Icon name="check" size={24} />
               </span>
-              <h2>Solicitud registrada</h2>
+              <h2>Reserva confirmada</h2>
               <p>
-                Guardamos tu solicitud para <strong>{room.name}</strong> en {hotel.name}, del{' '}
-                {formatLongDate(checkIn)} al {formatLongDate(checkOut)}.
+                Tu código es <strong>{booking.codigo}</strong>. Reservaste{' '}
+                <strong>{room.name}</strong> en {hotel.name}, del {formatLongDate(checkIn)} al{' '}
+                {formatLongDate(checkOut)}.
               </p>
-              {IS_DEMO_MODE && (
+              {IS_BOOKING_DEMO ? (
                 <p className="demo-note">
                   <Icon name="sparkles" size={16} />
                   <span>
-                    Modo demo: la reserva no se envió a ningún servidor. Al conectar el microservicio
-                    de reservas, este formulario hará <code>POST /reservas</code>.
+                    Modo demo: la reserva no se envió a ningún servidor. Define{' '}
+                    <code>VITE_RESERVAS_URL</code> para enviarla a hotel-ms-reservas y recibir el
+                    comprobante por correo.
                   </span>
+                </p>
+              ) : (
+                <p>
+                  En unos instantes te llegará a <strong>{booking.huesped.email}</strong> el
+                  comprobante en PDF.
                 </p>
               )}
               <button type="button" className="btn btn-primary" onClick={onClose}>
@@ -145,16 +184,28 @@ export function BookingPanel({
               </ul>
 
               <form className="booking-form" onSubmit={submit}>
-                <label>
-                  <span>Nombre y apellido</span>
-                  <input
-                    type="text"
-                    value={name}
-                    required
-                    autoComplete="name"
-                    onChange={(event) => setName(event.target.value)}
-                  />
-                </label>
+                <div className="booking-form-row">
+                  <label>
+                    <span>Nombre</span>
+                    <input
+                      type="text"
+                      value={firstName}
+                      required
+                      autoComplete="given-name"
+                      onChange={(event) => setFirstName(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    <span>Apellido</span>
+                    <input
+                      type="text"
+                      value={lastName}
+                      required
+                      autoComplete="family-name"
+                      onChange={(event) => setLastName(event.target.value)}
+                    />
+                  </label>
+                </div>
                 <label>
                   <span>Correo electrónico</span>
                   <input
@@ -165,13 +216,28 @@ export function BookingPanel({
                     onChange={(event) => setEmail(event.target.value)}
                   />
                 </label>
-                <button type="submit" className="btn btn-primary btn-block">
-                  Confirmar solicitud
+                <label>
+                  <span>Teléfono (opcional)</span>
+                  <input
+                    type="tel"
+                    value={phone}
+                    autoComplete="tel"
+                    onChange={(event) => setPhone(event.target.value)}
+                  />
+                </label>
+                {error && (
+                  <p className="booking-error" role="alert">
+                    {error}
+                  </p>
+                )}
+                <button type="submit" className="btn btn-primary btn-block" disabled={sending}>
+                  {sending ? 'Enviando reserva…' : 'Confirmar reserva'}
                 </button>
                 <p className="booking-fineprint">
                   {room.refundable
                     ? 'Puedes cancelar sin costo hasta 48 h antes del check-in.'
-                    : 'Tarifa no reembolsable: no admite cancelación ni cambios.'}
+                    : 'Tarifa no reembolsable: no admite cancelación ni cambios.'}{' '}
+                  Te enviaremos el comprobante por correo.
                 </p>
               </form>
             </>

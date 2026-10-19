@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Icon } from '@/components/ui/Icon'
 import { Reveal } from '@/components/ui/Reveal'
-import { IS_DEMO_MODE } from '@/api/client'
+import { IS_BOOKING_DEMO } from '@/api/bookings'
 
 const FAQ = [
   {
@@ -37,7 +37,7 @@ export function HelpPage() {
           </h1>
         </div>
 
-        {IS_DEMO_MODE && (
+        {IS_BOOKING_DEMO && (
           <p className="demo-note">
             <Icon name="sparkles" size={16} />
             <span>

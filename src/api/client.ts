@@ -23,11 +23,13 @@ interface RequestOptions {
   signal?: AbortSignal
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: unknown
+  /** Por defecto `API_URL`; las reservas usan su propia URL (ver `api/bookings.ts`). */
+  baseUrl?: string
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { signal, method = 'GET', body } = options
-  const url = `${API_URL.replace(/\/$/, '')}${path}`
+  const { signal, method = 'GET', body, baseUrl = API_URL } = options
+  const url = `${baseUrl.replace(/\/$/, '')}${path}`
 
   const response = await fetch(url, {
     method,
