@@ -28,11 +28,13 @@ jobs:
       - run: npm ci
 
       # El sitio vive en https://<usuario>.github.io/<repositorio>/, por eso el --base.
-      # VITE_API_URL y VITE_RESERVAS_URL salen de Settings → Secrets and variables → Actions → Variables; vacías = modo demo.
+      # VITE_CATALOGO_URL, VITE_RESERVAS_URL y VITE_COGNITO_* salen de Settings → Secrets and variables → Actions → Variables; vacías = modo demo.
       - run: npm run build -- --base "/${{ github.event.repository.name }}/"
         env:
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          VITE_CATALOGO_URL: ${{ vars.VITE_CATALOGO_URL }}
           VITE_RESERVAS_URL: ${{ vars.VITE_RESERVAS_URL }}
+          VITE_COGNITO_REGION: ${{ vars.VITE_COGNITO_REGION }}
+          VITE_COGNITO_CLIENT_ID: ${{ vars.VITE_COGNITO_CLIENT_ID }}
 
       # GitHub Pages responde 404.html en rutas desconocidas (/hoteles, /hotel/:slug...): así las atiende React Router.
       - run: cp dist/index.html dist/404.html

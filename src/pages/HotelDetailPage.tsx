@@ -7,6 +7,7 @@ import { RatingBadge } from '@/components/ui/RatingBadge'
 import { StarRating } from '@/components/ui/StarRating'
 import { BookingPanel } from '@/components/detail/BookingPanel'
 import { getHotelBySlug } from '@/api/hotels'
+import { IS_CATALOG_DEMO, disponibilidad } from '@/api/catalogo'
 import { getAmenity } from '@/data/amenities'
 import { parseSearchQuery } from '@/lib/searchParams'
 import {
@@ -30,6 +31,9 @@ export function HotelDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedRoom, setSelectedRoom] = useState<RoomOption | null>(null)
 
+  // Unidades libres por habitación para las fechas buscadas (hotel-ms-catalogo, según las reservas activas).
+  const [libres, setLibres] = useState<Record<string, number>>({})
+
   const nights = nightsBetween(query.checkIn, query.checkOut)
 
   useEffect(() => {
@@ -50,6 +54,23 @@ export function HotelDetailPage() {
 
     return () => controller.abort()
   }, [slug])
+
+  useEffect(() => {
+    if (!hotel || IS_CATALOG_DEMO) return
+    const controller = new AbortController()
+    setLibres({})
+    Promise.all(
+      hotel.rooms.map((room) =>
+        disponibilidad(room.id, query.checkIn, query.checkOut, controller.signal)
+          .then((d) => [room.id, d.disponibles] as const)
+          .catch(() => null),
+      ),
+    ).then((resultados) => {
+      if (controller.signal.aborted) return
+      setLibres(Object.fromEntries(resultados.filter((r) => r !== null)))
+    })
+    return () => controller.abort()
+  }, [hotel, query.checkIn, query.checkOut])
 
   if (loading) {
     return (
@@ -157,7 +178,9 @@ export function HotelDetailPage() {
           <section className="detail-section" id="habitaciones">
             <h2>Habitaciones disponibles</h2>
             <div className="room-list">
-              {hotel.rooms.map((room) => (
+              {hotel.rooms.map((room) => {
+                const quedan = libres[room.id] ?? room.available
+                return (
                 <div key={room.id} className="room-row">
                   <div className="room-info">
                     <h3>{room.name}</h3>
@@ -192,19 +215,23 @@ export function HotelDetailPage() {
                       {formatPrice(room.pricePerNight * nights)} por {nights}{' '}
                       {pluralize(nights, 'noche', 'noches')}
                     </p>
-                    <p className="room-stock">
-                      Quedan {room.available} {pluralize(room.available, 'unidad', 'unidades')}
+                    <p className={`room-stock ${quedan > 0 ? '' : 'is-out'}`}>
+                      {quedan > 0
+                        ? `Quedan ${quedan} ${pluralize(quedan, 'unidad', 'unidades')}`
+                        : 'Sin disponibilidad en estas fechas'}
                     </p>
                     <button
                       type="button"
                       className="btn btn-primary btn-sm"
+                      disabled={quedan <= 0}
                       onClick={() => setSelectedRoom(room)}
                     >
                       Reservar
                     </button>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </section>
 

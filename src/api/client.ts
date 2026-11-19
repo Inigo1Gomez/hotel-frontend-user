@@ -1,45 +1,51 @@
 /**
- * Cliente HTTP minimo del frontend de usuario.
- *
- * `VITE_API_URL` apunta al microservicio de reservas. Si esta vacio, la app
- * funciona en modo demo contra el dataset local (`src/data/hotels.ts`).
+ * Cliente HTTP minimo del frontend de usuario. Cada API tiene su URL base:
+ * catalogo (`api/catalogo.ts`) y reservas (`api/bookings.ts`).
  */
-
-export const API_URL: string = (import.meta.env.VITE_API_URL ?? '').trim()
-
-export const IS_DEMO_MODE = API_URL === ''
 
 export class ApiError extends Error {
   readonly status: number
+  /** Codigo de error del backend, p. ej. RESERVA_NO_ENCONTRADA. */
+  readonly code?: string
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, code?: string) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    if (code) this.code = code
   }
 }
 
 interface RequestOptions {
   signal?: AbortSignal
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  method?: 'GET' | 'POST' | 'PATCH'
   body?: unknown
-  /** Por defecto `API_URL`; las reservas usan su propia URL (ver `api/bookings.ts`). */
-  baseUrl?: string
+  baseUrl: string
+  /** Access token de Cognito para las rutas /cliente. */
+  token?: string
 }
 
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { signal, method = 'GET', body, baseUrl = API_URL } = options
+export async function request<T>(path: string, options: RequestOptions): Promise<T> {
+  const { signal, method = 'GET', body, baseUrl, token } = options
   const url = `${baseUrl.replace(/\/$/, '')}${path}`
 
   const response = await fetch(url, {
     method,
     signal: signal ?? null,
-    headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+    headers: {
+      ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
 
   if (!response.ok) {
-    throw new ApiError(`La solicitud a ${path} falló (${response.status})`, response.status)
+    const error = (await response.json().catch(() => ({}))) as { error?: unknown }
+    throw new ApiError(
+      `La solicitud a ${path} falló (${response.status})`,
+      response.status,
+      typeof error.error === 'string' ? error.error : undefined,
+    )
   }
 
   return (await response.json()) as T

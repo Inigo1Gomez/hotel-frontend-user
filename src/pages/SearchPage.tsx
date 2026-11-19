@@ -10,7 +10,7 @@ import { EmptyState } from '@/components/results/EmptyState'
 import { MapPanel } from '@/components/results/MapPanel'
 import { Icon } from '@/components/ui/Icon'
 import { searchHotels } from '@/api/hotels'
-import { IS_DEMO_MODE } from '@/api/client'
+import { IS_CATALOG_DEMO as IS_DEMO_MODE } from '@/api/catalogo'
 import { countActiveFilters, defaultFilters } from '@/lib/filters'
 import { parseSearchQuery, serializeSearchQuery } from '@/lib/searchParams'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
@@ -111,7 +111,7 @@ export function SearchPage() {
             <Icon name="sparkles" size={16} />
             <span>
               <strong>Modo demo.</strong> Precios, disponibilidad y opiniones son ficticios. Define{' '}
-              <code>VITE_API_URL</code> para consumir el microservicio de reservas.
+              <code>VITE_CATALOGO_URL</code> para consumir el catálogo (hotel-ms-catalogo).
             </span>
           </p>
         )}

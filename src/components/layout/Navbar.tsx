@@ -5,6 +5,8 @@ import { Icon } from '@/components/ui/Icon'
 import { useScrollSpy } from '@/hooks/useScrollSpy'
 import { useScrolled } from '@/hooks/useScrolled'
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
+import { useAuth } from '@/auth/AuthContext'
+import { COGNITO_ENABLED } from '@/auth/cognitoApi'
 
 /** Secciones ancladas de la portada, con scroll-spy. */
 const HOME_SECTIONS = [
@@ -18,6 +20,7 @@ const HOME_SECTIONS = [
 /** Rutas visibles cuando no estamos en la portada. */
 const ROUTE_LINKS = [
   { to: '/hoteles', label: 'Alojamientos' },
+  { to: '/reserva', label: 'Mi reserva' },
   { to: '/ayuda', label: 'Ayuda' },
 ]
 
@@ -27,6 +30,13 @@ export function Navbar() {
   const { pathname } = useLocation()
   const isHome = pathname === '/'
   const activeSection = useScrollSpy(isHome ? HOME_SECTIONS.map((s) => s.id) : [])
+  const { huesped } = useAuth()
+  // Sin Cognito configurado no se muestra la cuenta: el sitio funciona igual en modo invitado.
+  const cuenta = COGNITO_ENABLED
+    ? huesped
+      ? { to: '/cuenta', label: huesped.nombre.split(' ')[0] || 'Mi cuenta' }
+      : { to: '/ingresar', label: 'Ingresar' }
+    : null
 
   useLockBodyScroll(menuOpen)
 
@@ -61,6 +71,13 @@ export function Navbar() {
               ))}
         </nav>
 
+        {cuenta ? (
+          <Link to={cuenta.to} className="btn btn-ghost btn-sm navbar-account">
+            <Icon name="users" size={16} />
+            {cuenta.label}
+          </Link>
+        ) : null}
+
         <Link to="/hoteles" className="btn btn-primary btn-sm navbar-cta">
           <Icon name="search" size={16} />
           Buscar hotel
@@ -91,6 +108,18 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+        {cuenta ? (
+          <>
+            {huesped ? (
+              <Link to="/mis-reservas" onClick={close}>
+                Mis reservas
+              </Link>
+            ) : null}
+            <Link to={cuenta.to} onClick={close}>
+              {huesped ? 'Mi cuenta' : 'Ingresar'}
+            </Link>
+          </>
+        ) : null}
         <Link to="/hoteles" className="btn btn-primary" onClick={close}>
           Buscar hotel
         </Link>
