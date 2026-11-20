@@ -9,7 +9,7 @@ import { StarRating } from '@/components/ui/StarRating'
 import { SearchBar } from '@/components/search/SearchBar'
 import { NEIGHBORHOODS } from '@/data/neighborhoods'
 import { getFeaturedHotels } from '@/api/hotels'
-import { IS_DEMO_MODE } from '@/api/client'
+import { IS_CATALOG_DEMO as IS_DEMO_MODE } from '@/api/catalogo'
 import { buildSearchUrl, defaultSearchQuery } from '@/lib/searchParams'
 import { formatNumber, formatPrice } from '@/lib/format'
 import { HOTELS } from '@/data/hotels'
@@ -192,7 +192,7 @@ export function HomePage() {
               <Icon name="sparkles" size={16} />
               <span>
                 <strong>Modo demo.</strong> Los alojamientos son reales, pero precios, puntajes y
-                disponibilidad son ficticios hasta conectar el microservicio de reservas.
+                disponibilidad son ficticios hasta conectar el catálogo (hotel-ms-catalogo).
               </span>
             </p>
           )}

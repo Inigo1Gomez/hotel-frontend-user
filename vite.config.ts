@@ -20,7 +20,6 @@ export default defineConfig(({ mode }) => {
       host: true,
       port: 5173,
       // Los microservicios viven aparte: se proxean en desarrollo (no tienen CORS).
-      // El primero que calza gana, por eso /api/reservas va antes que /api.
       proxy: {
         // hotel-ms-reservas (local o EC2): /api/reservas/api/v1/... -> <destino>/api/v1/...
         '/api/reservas': {
@@ -28,9 +27,11 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/reservas/, ''),
         },
-        '/api': {
-          target: env.VITE_API_PROXY || 'http://localhost:8080',
+        // hotel-ms-catalogo (local o EC2): /api/catalogo/api/v1/... -> <destino>/api/v1/...
+        '/api/catalogo': {
+          target: env.VITE_CATALOGO_PROXY || 'http://localhost:8088',
           changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/catalogo/, ''),
         },
       },
     },

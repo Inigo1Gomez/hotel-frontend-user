@@ -58,7 +58,10 @@ function normalize(value: string): string {
 }
 
 export function matchesFilters(hotel: Hotel, filters: HotelFilters): boolean {
-  if (hotel.pricePerNight < filters.priceMin || hotel.pricePerNight > filters.priceMax) return false
+  // El slider va de PRICE_BOUNDS.min a .max: en un extremo no limita, porque el catálogo puede tener
+  // precios fuera de ese rango (el Admin los edita).
+  if (filters.priceMin > PRICE_BOUNDS.min && hotel.pricePerNight < filters.priceMin) return false
+  if (filters.priceMax < PRICE_BOUNDS.max && hotel.pricePerNight > filters.priceMax) return false
   if (filters.stars.length > 0 && !filters.stars.includes(hotel.stars)) return false
   if (hotel.rating < filters.minRating) return false
   if (filters.neighborhoods.length > 0 && !filters.neighborhoods.includes(hotel.neighborhood)) return false

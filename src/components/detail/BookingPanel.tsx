@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import type { Guests, Hotel, RoomOption } from '@/types/hotel'
 import { Icon } from '@/components/ui/Icon'
 import { ApiError } from '@/api/client'
-import { IS_BOOKING_DEMO, createBooking } from '@/api/bookings'
-import type { ReservaPayload } from '@/api/bookings'
+import { ESTADO_TEXTO, IS_BOOKING_DEMO, createBooking } from '@/api/bookings'
+import type { Reserva } from '@/api/bookings'
+import { useAuth } from '@/auth/AuthContext'
+import { COGNITO_ENABLED } from '@/auth/cognitoApi'
 import { useLockBodyScroll } from '@/hooks/useLockBodyScroll'
 import { formatLongDate, formatPrice, guestsLabel, pluralize } from '@/lib/format'
 
@@ -21,6 +24,9 @@ interface BookingPanelProps {
 
 function bookingErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
+    if (error.status === 401 || error.status === 403) {
+      return 'Tu sesión venció o no tiene el rol Cliente. Vuelve a iniciar sesión e intenta de nuevo.'
+    }
     return error.status === 400
       ? 'El servicio de reservas rechazó los datos. Revisa el formulario e intenta de nuevo.'
       : `El servicio de reservas no está disponible (HTTP ${error.status}). Intenta de nuevo en unos minutos.`
@@ -31,8 +37,9 @@ function bookingErrorMessage(error: unknown): string {
 /**
  * Resumen, datos del huesped y envio de la reserva a hotel-ms-reservas.
  *
- * Al aceptarla, el microservicio publica `reserva.creada` en RabbitMQ y
- * hotel-ms-notificaciones envia el comprobante en PDF al correo del huesped.
+ * Sin sesion se reserva como invitado (ruta publica). Con sesion de Cognito se reserva con cuenta:
+ * queda a nombre del huesped y aparece en "Mis reservas". En ambos casos parte en PENDIENTE,
+ * el microservicio publica el evento y hotel-ms-notificaciones envia el comprobante en PDF.
  */
 export function BookingPanel({
   hotel,
@@ -43,13 +50,16 @@ export function BookingPanel({
   nights,
   onClose,
 }: BookingPanelProps) {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
+  const { huesped, accessToken } = useAuth()
+  // Con cuenta se precargan nombre y email del token (el email es el de la cuenta y no se edita).
+  const [nombreCuenta = '', ...apellidosCuenta] = huesped?.nombre.split(' ') ?? []
+  const [firstName, setFirstName] = useState(nombreCuenta)
+  const [lastName, setLastName] = useState(apellidosCuenta.join(' '))
+  const [email, setEmail] = useState(huesped?.email ?? '')
   const [phone, setPhone] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [booking, setBooking] = useState<ReservaPayload | null>(null)
+  const [booking, setBooking] = useState<Reserva | null>(null)
 
   useLockBodyScroll(true)
 
@@ -70,6 +80,11 @@ export function BookingPanel({
     setSending(true)
     setError(null)
     try {
+      const token = huesped ? await accessToken() : null
+      if (huesped && !token) {
+        setError('Tu sesión venció. Vuelve a iniciar sesión para reservar con tu cuenta.')
+        return
+      }
       const created = await createBooking({
         hotel,
         room,
@@ -78,7 +93,7 @@ export function BookingPanel({
         guests,
         total,
         guest: { firstName, lastName, email, phone },
-      })
+      }, token)
       setBooking(created)
     } catch (err) {
       setError(bookingErrorMessage(err))
@@ -117,11 +132,15 @@ export function BookingPanel({
               <span className="card-icon is-green">
                 <Icon name="check" size={24} />
               </span>
-              <h2>Reserva confirmada</h2>
+              <h2>Reserva recibida</h2>
               <p>
                 Tu código es <strong>{booking.codigo}</strong>. Reservaste{' '}
                 <strong>{room.name}</strong> en {hotel.name}, del {formatLongDate(checkIn)} al{' '}
                 {formatLongDate(checkOut)}.
+              </p>
+              <p>
+                Estado: <strong>{ESTADO_TEXTO[booking.estado]}</strong>. El hotel la confirma y te avisamos por
+                correo.
               </p>
               {IS_BOOKING_DEMO ? (
                 <p className="demo-note">
@@ -138,9 +157,24 @@ export function BookingPanel({
                   comprobante en PDF.
                 </p>
               )}
-              <button type="button" className="btn btn-primary" onClick={onClose}>
-                Entendido
-              </button>
+              <div className="booking-done-actions">
+                {huesped ? (
+                  <Link to="/mis-reservas" className="btn btn-outline">
+                    Ver mis reservas
+                  </Link>
+                ) : (
+                  <Link
+                    to={`/reserva?codigo=${encodeURIComponent(booking.codigo)}`}
+                    state={{ email: booking.huesped.email }}
+                    className="btn btn-outline"
+                  >
+                    Consultar mi reserva
+                  </Link>
+                )}
+                <button type="button" className="btn btn-primary" onClick={onClose}>
+                  Entendido
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -184,6 +218,24 @@ export function BookingPanel({
               </ul>
 
               <form className="booking-form" onSubmit={submit}>
+                <p className="booking-mode">
+                  {huesped ? (
+                    <>
+                      Reservas con tu cuenta <strong>{huesped.email}</strong>: quedará en{' '}
+                      <Link to="/mis-reservas">Mis reservas</Link>.
+                    </>
+                  ) : (
+                    <>
+                      Reservas como invitado: guarda el código que te daremos.
+                      {COGNITO_ENABLED ? (
+                        <>
+                          {' '}
+                          <Link to="/ingresar">Inicia sesión</Link> para verla en Mis reservas.
+                        </>
+                      ) : null}
+                    </>
+                  )}
+                </p>
                 <div className="booking-form-row">
                   <label>
                     <span>Nombre</span>
@@ -212,6 +264,7 @@ export function BookingPanel({
                     type="email"
                     value={email}
                     required
+                    readOnly={Boolean(huesped)}
                     autoComplete="email"
                     onChange={(event) => setEmail(event.target.value)}
                   />
@@ -231,7 +284,7 @@ export function BookingPanel({
                   </p>
                 )}
                 <button type="submit" className="btn btn-primary btn-block" disabled={sending}>
-                  {sending ? 'Enviando reserva…' : 'Confirmar reserva'}
+                  {sending ? 'Enviando reserva…' : 'Enviar reserva'}
                 </button>
                 <p className="booking-fineprint">
                   {room.refundable

@@ -8,6 +8,12 @@ import { SearchPage } from '@/pages/SearchPage'
 import { HotelDetailPage } from '@/pages/HotelDetailPage'
 import { HelpPage } from '@/pages/HelpPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+import { LoginPage } from '@/pages/LoginPage'
+import { RegisterPage } from '@/pages/RegisterPage'
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
+import { AccountPage } from '@/pages/AccountPage'
+import { ConsultaReservaPage } from '@/pages/ConsultaReservaPage'
+import { MisReservasPage } from '@/pages/MisReservasPage'
 
 export function App() {
   return (
@@ -24,6 +30,12 @@ export function App() {
           <Route path="/hoteles" element={<SearchPage />} />
           <Route path="/hotel/:slug" element={<HotelDetailPage />} />
           <Route path="/ayuda" element={<HelpPage />} />
+          <Route path="/ingresar" element={<LoginPage />} />
+          <Route path="/registro" element={<RegisterPage />} />
+          <Route path="/recuperar" element={<ForgotPasswordPage />} />
+          <Route path="/cuenta" element={<AccountPage />} />
+          <Route path="/reserva" element={<ConsultaReservaPage />} />
+          <Route path="/mis-reservas" element={<MisReservasPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

@@ -14,7 +14,8 @@ import type {
  * Los alojamientos son establecimientos reales de Valparaíso, pero los precios,
  * puntajes, disponibilidad y reseñas son FICTICIOS: existen solo para poder
  * desarrollar la interfaz sin depender del microservicio de reservas.
- * Al definir VITE_API_URL el cliente deja de usar este archivo.
+ * Al definir VITE_CATALOGO_URL, habitaciones, precios y unidades salen de hotel-ms-catalogo;
+ * de aqui se siguen usando fotos, servicios, opiniones y ubicacion (el catalogo no los guarda).
  */
 
 interface HotelSeed {

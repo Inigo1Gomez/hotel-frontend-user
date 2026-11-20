@@ -743,6 +743,30 @@
   margin-top: 6px;
 }
 
+.booking-done-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.booking-mode {
+  padding: 10px 13px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-soft);
+  font-size: 13px;
+  color: var(--brand-dark);
+}
+
+.booking-mode a {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.room-stock.is-out {
+  color: var(--text-faint);
+}
+
 .detail-loading {
   padding-block: 32px;
 }
